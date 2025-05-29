@@ -17,7 +17,7 @@ def is_clause_unsatisfied(clause, assignment):
         val = assignment.get(abs(literal))
         #if the literal is positive and the variable is assigned true, the clause is not unsatisfied.
         #if the literal is negative and the variable is assigned false, the clause is not unsatisfied.
-        if val is not None and ((literal > 0 and (val)) and (literal < 0 and not val) ):
+        if val is not None and ((literal > 0 and (val)) or (literal < 0 and not val) ):
             return False
     #if all literals are assigned and they are all false, the clause is unsatisfied, so return true.
     return True
