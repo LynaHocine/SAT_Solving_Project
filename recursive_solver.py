@@ -4,8 +4,8 @@ def is_clause_satisfied(clause, assignment):
         # val gets the current assignment
         val = assignment.get(abs(literal))
         #if the literal is positive and the variable is assigned true , the literal is true. (literal > 0 and val)
-        #if the literal is negative and the variable is assigned false, the literal is true. ( literal < 0 and val)
-        if val is not None and ((literal > 0 and val) or (literal < 0 and val)):
+        #if the literal is negative and the variable is assigned false, the literal is true. ( literal < 0 and not val)
+        if val is not None and ((literal > 0 and val) or (literal < 0 and not val)):
             return True
     # if no literal in the clause is satisfied , the clause is unsatisfied, so return false.
     return False
@@ -17,7 +17,7 @@ def is_clause_unsatisfied(clause, assignment):
         val = assignment.get(abs(literal))
         #if the literal is positive and the variable is assigned true, the clause is not unsatisfied.
         #if the literal is negative and the variable is assigned false, the clause is not unsatisfied.
-        if val is not None and ((literal > 0 and (val)) or (literal < 0 and not val) ):
+        if val is None or ((literal > 0 and (val)) or (literal < 0 and not val) ):
             return False
     #if all literals are assigned and they are all false, the clause is unsatisfied, so return true.
     return True
@@ -38,15 +38,18 @@ def choose_next_variable (formula, assignment):
 
 #Implementing the recursive solver (DPLL Algorithm )
 def dpll(formula, assignment = {}):
+    print(f"Trying assignment: {assignment}")
 
     #for every clause, we check if it is unsatisfied. If a clause is unsatisfied, the formula is UNSAT under our current assignment. We return false.
     for clause in formula:
         if is_clause_unsatisfied (clause, assignment):
+            print(f"Clause {clause} is unsatisfied under {assignment}")
             return False, {}
         
     #if all clauses are satisfied, a solution is found. we return true and the solution
     all_clauses_sat = all(is_clause_satisfied(clause, assignment) for clause in formula)
     if all_clauses_sat:
+        print(f"All clauses satisfied with assignment {assignment}")
         return True, assignment
     
     #we choose a variable that is unassigned
