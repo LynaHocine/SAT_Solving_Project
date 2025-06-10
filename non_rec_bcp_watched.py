@@ -39,10 +39,12 @@ def bcp(assignment, watched, watch_list,formula, newly_assigned_literals):
                 #If the other watched literal is assigned false , there is a conflict during the propagation
                 val_other= assignment.get(abs(other))
                 if (other > 0 and val_other is False) or (other < 0 and val_other is True):
+                    #we have a conflict so the clause is falsified
                     return False
                 elif val_other is None :
+                    #we do unit propagation: the other watched literal must be true to satisfy the clause
                     assignment[abs(other)] = other > 0
-                    propagation_queue.append(other)
+                    propagation_queue.append(other) # we add the newly assigned literal to the queue
                     print(f"Propagating {other}, assignment: {assignment}")
 
     return True # no conflicts, propagation is successful
@@ -58,7 +60,8 @@ def select_unassigned(assignment, all_literals):
         if var not in assignment:
             return var # return the first unassigned variable
     return None
-        
+
+#checking if the formula is satisfied under the current assignment
 def formula_satisfied(formula, assignment):
     for clause in formula:
         if not any(
@@ -73,14 +76,14 @@ def formula_satisfied(formula, assignment):
 #the main non-recursive DPLL solver
 def non_rec_dpll(filename):
     formula = parse_dimacs(filename)
-    assignment = {}
+    assignment = {} #dictionary to store variable assignment
     stack = [] #stack for backtracking
     
     #Get all variables used in the formula
     all_vars = set(abs(lit) for clause in formula for lit in clause)
     watch_list = defaultdict(set) #maps the literal to the set of clause ids watching it
     watched ={} #maps clause id to two literals
-    unit_literals = []
+    unit_literals = [] # list to store unit literals
 
     #initializing watched literals per clause
     for id, clause in enumerate(formula):
@@ -92,11 +95,11 @@ def non_rec_dpll(filename):
         elif (len(clause) == 1):
             #unit clause : we only have one literal
             lit = clause[0]
-            watched[id]=(lit,lit)
+            watched[id]=(lit,lit) # both watched literals are the same in a unit clause
             watch_list[lit].add(id)
             unit_literals.append(lit)
         else:
-            #Empty clause
+            #Empty clause : unsatisfied
             return (False, None)
 
     #initial propagation of unit clauses
@@ -105,32 +108,38 @@ def non_rec_dpll(filename):
     
     while True:
         if all_vars.issubset(assignment.keys()):
+            #all variables are assigned
             if formula_satisfied(formula, assignment):
-                return (True, assignment)
+                return (True, assignment) #formula is SAT
             if not stack:
-                return (False, None)
+                return (False, None) # formula is UNSAT, no more backtracking options
             lit, prev_assignment, tried_true= stack.pop()
             if tried_true:
+                #backtracking by trying the opposite assignment
                 assignment = prev_assignment.copy()
                 assignment[abs(lit)] = False
-                stack.append((lit, assignment.copy(), False))
+                stack.append((lit, assignment.copy(), False)) #we push the opposite assignment into the stack
                 if not bcp(assignment, watched, watch_list, formula, [lit]):
-                    continue
+                    continue # conflict , we continue backtracking
 
             else:
+                #we already tried both assignments for this variable, we continue to the next backtracking option
                 continue
         else:
+            #select unassigned variable
             decision_var = select_unassigned(assignment, all_vars)
-            stack.append((decision_var, assignment.copy(), True))
-            assignment[decision_var] = True
+            stack.append((decision_var, assignment.copy(), True)) # we push the current state onto the stack
+            assignment[decision_var] = True # we assign the vriable to True
             if not bcp(assignment, watched, watch_list, formula, [decision_var]):
+                #conflict , we backtrack
                 while stack:
                     lit, prev_assignment, tried_true = stack.pop()
                     if tried_true:
+                        #we try the opposite assignment
                         assignment = prev_assignment.copy()
                         assignment[abs(lit)] = False
                         stack.append((lit, assignment.copy(), False))
                         if bcp(assignment, watched, watch_list, formula, [-abs(lit)]):
-                            break
+                            break # backtracking is successful, we break out of the loop
                 else:
-                    return (False, None)
+                    return (False, None) # no more backtracking options, formula is UNSAT
