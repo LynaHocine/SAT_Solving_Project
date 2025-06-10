@@ -129,7 +129,7 @@ def non_rec_dpll(filename):
             #select unassigned variable
             decision_var = select_unassigned(assignment, all_vars)
             stack.append((decision_var, assignment.copy(), True)) # we push the current state onto the stack
-            assignment[decision_var] = True # we assign the vriable to True
+            assignment[decision_var] = True # we assign the variable to True
             if not bcp(assignment, watched, watch_list, formula, [decision_var]):
                 #conflict , we backtrack
                 while stack:
