@@ -36,7 +36,7 @@ def bcp(assignment, watched, watch_list,formula, newly_assigned_literals, levels
                     break
 
             if not found_new_watch:
-                val_other = assignment.gt(abs(other))
+                val_other = assignment.get(abs(other))
                 if(other > 0 and val_other is False )or(other<0 and val_other is True):
                     return id
                 elif val_other is None:

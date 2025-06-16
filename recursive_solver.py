@@ -1,3 +1,5 @@
+from parser_dimacs import parse_dimacs
+
 #checking if the formula is satisfiable
 def is_clause_satisfied(clause, assignment):
     for literal in clause :
@@ -37,7 +39,7 @@ def choose_next_variable (formula, assignment):
     return None
 
 #Implementing the recursive solver (DPLL Algorithm )
-def dpll(formula, assignment = {}):
+def dpll_core(formula, assignment = None):
     print(f"Trying assignment: {assignment}")
 
     #for every clause, we check if it is unsatisfied. If a clause is unsatisfied, the formula is UNSAT under our current assignment. We return false.
@@ -60,17 +62,21 @@ def dpll(formula, assignment = {}):
     
     #we try to assign the variable to true
     assignment[var]=True
-    sat, result = dpll(formula, assignment.copy())
+    sat, result = dpll_core(formula, assignment.copy())
     #if the result is true, the formula is SAT.
     if sat:
         return True, result
 
     #if the result is false , we backtrack and assign the same variable to false.
     assignment[var]=False
-    sat, result = dpll(formula, assignment.copy())
+    sat, result = dpll_core(formula, assignment.copy())
     #if the result is true, the formula is SAT.
     if sat:
         return True, result
     
     #if neither worked, the formula is UNSAT
     return False, {}
+
+def dpll(filename):
+    formula= parse_dimacs(filename)
+    return dpll_core(formula, {})

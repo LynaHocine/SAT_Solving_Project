@@ -1,5 +1,5 @@
 import os
-from recursive_solver import dpll
+from recursive_solver import dpll, dpll_core
 from parser_dimacs import parse_dimacs
 from non_rec_bcp_watched import non_rec_dpll
 from cdcl_solver import cdcl
@@ -11,15 +11,15 @@ def test_formula(folder, filename):
 
     formula = parse_dimacs(filepath)
     print (f" testing formula 1: {filename}")
-    sat, model = dpll(formula, {})
+    sat, model = dpll_core(formula, {})
     if sat:
         print(f"Satisfiable formula1 - Model : {model}")
     else:
         print("Unsatisfiable formula1")
 
-test_formula("test-formulas", "sat1.in" )
+test_formula("test-formulas", "sat0.in" )
 
-def test_solver2(folder, filename):
+'''def test_solver2(folder, filename):
     filepath = os.path.join(folder, filename)
     if not os.path.exists(filepath):
         print(f"File not found: {filename}")
@@ -45,5 +45,5 @@ def test_solver3(folder, filename):
     else:
         print("Unsatisfiable formula3")
 
-test_solver3("test-formulas", "sat1.in")
+test_solver3("test-formulas", "sat1.in")'''
 
